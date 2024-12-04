@@ -120,10 +120,8 @@ func CountCrossMasOccurrences(wordGrid [][]rune) int {
 	count := 0
 	for rowNum, row := range wordGrid {
 		for colNum, character := range row {
-			if character == 'A' {
-				if crossMasFound(rowNum, colNum, wordGrid) {
-					count++
-				}
+			if character == 'A' && crossMasFound(rowNum, colNum, wordGrid) {
+				count++
 			}
 		}
 	}
