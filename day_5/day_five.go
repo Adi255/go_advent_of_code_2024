@@ -75,8 +75,8 @@ func SumMiddlePages(rules map[int][]int, updates [][]int) (middlePageSum, badUpd
 func ValidUpdate(update []int, rules map[int][]int) bool {
 	for index, page := range update {
 		pageRules := rules[page]
-		for _, rule := range pageRules {
-			if slices.Contains(update[:index], rule) {
+		for _, rulePage := range pageRules {
+			if slices.Contains(update[:index], rulePage) {
 				return false
 			}
 		}
