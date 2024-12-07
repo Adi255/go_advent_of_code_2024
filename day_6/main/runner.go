@@ -3,34 +3,38 @@ package main
 import (
 	day6 "advent_of_code/day_6"
 	"fmt"
-	"reflect"
+	"slices"
 )
 
-func main2() {
+func main() {
 	guardMap := day6.LoadGuardMap("../day6_input.txt")
-	updatedMap := day6.DeepCopyMap(guardMap)
-	guardHeading := day6.CurrentGuardHeading(guardMap)
-	var newHeading day6.Heading
-	prevHeading := guardHeading
-	for {
-		updatedMap, newHeading = day6.GuardStep(updatedMap, prevHeading)
-		if reflect.DeepEqual(newHeading, prevHeading) {
-			break
+	encounteredHeadings, _ := day6.TraverseMap(guardMap)
+	visitedPositions := [][2]int{}
+
+	for _, heading := range encounteredHeadings {
+		if !slices.Contains(visitedPositions, heading.Position) {
+			visitedPositions = append(visitedPositions, heading.Position)
 		}
-		prevHeading = newHeading
 	}
 
-	visitedPositions := day6.FindVisitedPositions(updatedMap)
-	fmt.Printf("Visited positions: %d\n", len(visitedPositions))
+	fmt.Println(len(visitedPositions))
 
-	potentialObstacleCount := len(day6.PotentialObstaclePositions)
+	// Part 2
+	countOfGoodObstacles := 0
 
-	// for i, pos := range visitedPositions {
-	// 	if pos == guardStartingPosition {
-	// 		visitedPositions = append(visitedPositions[:i], visitedPositions[i+1:]...)
-	// 		break
-	// 	}
-	// }
+	_, startPosition := day6.FindGuard(guardMap)
 
-	fmt.Printf("Good obstacle positions: %d", potentialObstacleCount)
+	idxToRemove := slices.Index(visitedPositions, startPosition)
+	visitedPositions = append(visitedPositions[:idxToRemove], visitedPositions[idxToRemove+1:]...)
+
+	for _, position := range visitedPositions {
+		guardMapVariation := day6.AddObstacleToMap(guardMap, position)
+		_, couldExit := day6.TraverseMap(guardMapVariation)
+		if !couldExit {
+			countOfGoodObstacles++
+		}
+	}
+
+	fmt.Println(countOfGoodObstacles)
+
 }

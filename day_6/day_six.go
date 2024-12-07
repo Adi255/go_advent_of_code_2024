@@ -14,11 +14,13 @@ const guardLeft = '<'
 const visited = 'X'
 const obstacle = '#'
 
+var turnMap = map[byte]byte{guardUp: guardRight, guardRight: guardDown, guardDown: guardLeft, guardLeft: guardUp}
+
 var guardPositions = []byte{guardUp, guardRight, guardDown, guardLeft}
 var PotentialObstaclePositions = map[[2]int][2]int{}
 
 type Heading struct {
-	position  [2]int
+	Position  [2]int
 	direction byte
 }
 
@@ -31,6 +33,57 @@ func LoadGuardMap(path string) [][]byte {
 	}
 
 	return guardMap
+}
+
+func TraverseMap(guardMap [][]byte) (encounteredHeadings []Heading, couldExit bool) {
+	_, nextPosition := FindGuard(guardMap)
+	heading := Heading{nextPosition, guardUp}
+	encounteredHeadings = []Heading{heading}
+	var oob bool
+	for {
+		heading, oob = GuardMove(guardMap, heading)
+		if oob {
+			return encounteredHeadings, true
+		}
+		if slices.Contains(encounteredHeadings, heading) {
+			return encounteredHeadings, false
+		}
+		encounteredHeadings = append(encounteredHeadings, heading)
+	}
+}
+
+func GuardMove(guardMap [][]byte, heading Heading) (Heading, bool) {
+	direction := heading.direction
+	currentPosition := heading.Position
+	nextPosition := determineNextPosition(guardMap, heading)
+	if guardOoB(guardMap, nextPosition) {
+		return heading, true
+	}
+	if guardMap[nextPosition[0]][nextPosition[1]] != obstacle {
+		return Heading{nextPosition, direction}, false
+	} else {
+		return Heading{currentPosition, turnMap[direction]}, false
+	}
+}
+
+func guardOoB(guardMap [][]byte, position [2]int) bool {
+	return position[0] < 0 || position[0] >= len(guardMap) || position[1] < 0 || position[1] >= len(guardMap[0])
+}
+
+func determineNextPosition(guardMap [][]byte, heading Heading) [2]int {
+	currentPosition := heading.Position
+	switch heading.direction {
+	case guardUp:
+		return [2]int{currentPosition[0] - 1, currentPosition[1]}
+	case guardRight:
+		return [2]int{currentPosition[0], currentPosition[1] + 1}
+	case guardDown:
+		return [2]int{currentPosition[0] + 1, currentPosition[1]}
+	case guardLeft:
+		return [2]int{currentPosition[0], currentPosition[1] - 1}
+	default:
+		panic("Invalid direction")
+	}
 }
 
 func DeepCopyMap(original [][]byte) [][]byte {
@@ -60,7 +113,7 @@ func GuardStep(guardMap [][]byte, heading Heading) ([][]byte, Heading) {
 	if LeavingMap(guardMap, heading) {
 		return FinalMap(guardMap, heading), heading
 	}
-	currentPosition := heading.position
+	currentPosition := heading.Position
 	direction := heading.direction
 	var nextPosition [2]int
 	var newHeading Heading
@@ -125,19 +178,19 @@ func FindGuard(guardMap [][]byte) (byte, [2]int) {
 func LeavingMap(guardMap [][]byte, heading Heading) bool {
 	switch heading.direction {
 	case guardUp:
-		return heading.position[0] == 0
+		return heading.Position[0] == 0
 	case guardRight:
-		return heading.position[1] == len(guardMap[0])-1
+		return heading.Position[1] == len(guardMap[0])-1
 	case guardDown:
-		return heading.position[0] == len(guardMap)-1
+		return heading.Position[0] == len(guardMap)-1
 	case guardLeft:
-		return heading.position[1] == 0
+		return heading.Position[1] == 0
 	}
 	return false
 }
 
 func FinalMap(guardMap [][]byte, heading Heading) [][]byte {
-	guardMap[heading.position[0]][heading.position[1]] = visited
+	guardMap[heading.Position[0]][heading.Position[1]] = visited
 	return guardMap
 }
 
