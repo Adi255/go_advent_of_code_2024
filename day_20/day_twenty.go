@@ -2,8 +2,6 @@ package day20
 
 import (
 	"advent_of_code/util"
-	"fmt"
-	"maps"
 	"math"
 	"slices"
 )
@@ -70,8 +68,6 @@ func nextPosition(raceMap [][]byte, position [2]int, visited [][2]int) [2]int {
 func CountTimeSavingCheats(raceTrack [][2]int, thresholdPs int, cheatRange int) int {
 	cheatCount := 0
 	trackLength := len(raceTrack)
-	cheatsBySaving := map[int][]Cheat{}
-	allCheats := []Cheat{}
 	for idx, pos := range raceTrack[:trackLength-thresholdPs] {
 		// cheat must save at least thresholdPs (i.e reachable in 3 moves and
 		// saving (otherIdx - currentIdx - 3) must be greater than thresholdPs)
@@ -83,14 +79,6 @@ func CountTimeSavingCheats(raceTrack [][2]int, thresholdPs int, cheatRange int) 
 			if cheat.saving >= thresholdPs {
 				cheatCount++
 			}
-			allCheats = append(allCheats, cheat)
-			cheatsBySaving[cheat.saving] = append(cheatsBySaving[cheat.saving], cheat)
-		}
-	}
-	keys := slices.Sorted(maps.Keys(cheatsBySaving))
-	for _, key := range keys {
-		if key >= thresholdPs {
-			fmt.Printf("Saving: %d, Cheats: %d\n", key, len(cheatsBySaving[key]))
 		}
 	}
 	return cheatCount
