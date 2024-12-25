@@ -69,11 +69,8 @@ func CountTimeSavingCheats(raceTrack [][2]int, thresholdPs int, cheatRange int) 
 	cheatCount := 0
 	trackLength := len(raceTrack)
 	for idx, pos := range raceTrack[:trackLength-thresholdPs] {
-		// cheat must save at least thresholdPs (i.e reachable in 3 moves and
-		// saving (otherIdx - currentIdx - 3) must be greater than thresholdPs)
+		// cheat end points must be greater than 2 positions away
 		potentialDestinations := raceTrack[idx+3:]
-		// normal time between points = otherIdx - currentIdx
-		// time saved = normal time - distance
 		cheatsForPos := timeSavingCheatsFromPosition(pos, potentialDestinations, cheatRange)
 		for _, cheat := range cheatsForPos {
 			if cheat.saving >= thresholdPs {
@@ -95,6 +92,7 @@ func timeSavingCheatsFromPosition(position [2]int, potentialDestinations [][2]in
 	for otherIdx, otherPos := range potentialDestinations {
 		distance := distance(position, otherPos)
 		if distance >= 2 && distance <= cheatRange {
+			// add 3 to offset index difference to original array, then remove distance covered by cheat
 			cheats = append(cheats, Cheat{position, otherPos, otherIdx + 3 - distance})
 		}
 	}
